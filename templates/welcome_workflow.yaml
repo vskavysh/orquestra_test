@@ -17,39 +17,7 @@ resources:
   parameters:
     url: "git@github.com:zapatacomputing/tutorial-0-ztransform.git"
     branch: "master"
-  '''
-- name: z-quantum-core
-  type: git
-  parameters:
-    url: "git@github.com:zapatacomputing/z-quantum-core.git"
-    branch: "master"
-- name: z-quantum-qcbm
-  type: git
-  parameters:
-    url: "git@github.com:zapatacomputing/z-quantum-qcbm.git"
-    branch: "dev"
-- name: z-quantum-optimizers
-  type: git
-  parameters:
-    url: "git@github.com:zapatacomputing/z-quantum-optimizers.git"
-    branch: "master"
-- name: qe-forest
-  type: git
-  parameters:
-    url: "git@github.com:zapatacomputing/qe-forest.git"
-    branch: "master"
-- name: qe-qhipster
-  type: git
-  parameters:
-    url: "git@github.com:zapatacomputing/qe-qhipster.git"
-    branch: "master"
-- name: qe-openfermion
-  type: git
-  parameters:
-    url: "git@github.com:zapatacomputing/qe-openfermion.git"
-    branch: "master"
 
-'''#:
 
 # Specify the prefix to use when generating names of workflow executions.
 metadata:
