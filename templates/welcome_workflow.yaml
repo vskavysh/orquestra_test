@@ -7,7 +7,7 @@ resources:
 - name: welcome
   type: git
   parameters:
-    url: "git@github.com:vskavysh/orquestra_test/tree/master/templates/welcome_workflow.git"
+    url: "git@github.com:vskavysh/orquestra_test/tree/master/templates/welcome_workflow.yaml"
     branch: "master"
 
 - name: ztransform
