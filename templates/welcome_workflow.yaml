@@ -1,56 +1,101 @@
-# Workflow API version
 ZapOSApiVersion: v1alpha1
-
-# Declares this as workflow
 kind: Workflow
 
-# List resources needed by workflow.
 resources:
-
-# A resource named `welcome` that is a public git repo. All the fields here are required except branch, which defaults to master.
-- name: welcome
+- name: z-quantum-core
   type: git
   parameters:
-    url: "git@github.com:vskavysh/orquestra_test.git"
+    url: "git@github.com:zapatacomputing/z-quantum-core.git"
     branch: "master"
-
-- name: ztransform
+- name: z-quantum-qcbm
   type: git
   parameters:
-    url: "git@github.com:zapatacomputing/tutorial-0-ztransform.git"
+    url: "git@github.com:zapatacomputing/z-quantum-qcbm.git"
+    branch: "dev"
+- name: z-quantum-optimizers
+  type: git
+  parameters:
+    url: "git@github.com:zapatacomputing/z-quantum-optimizers.git"
+    branch: "master"
+- name: qe-forest
+  type: git
+  parameters:
+    url: "git@github.com:zapatacomputing/qe-forest.git"
+    branch: "master"
+- name: qe-qhipster
+  type: git
+  parameters:
+    url: "git@github.com:zapatacomputing/qe-qhipster.git"
+    branch: "master"
+- name: qe-openfermion
+  type: git
+  parameters:
+    url: "git@github.com:zapatacomputing/qe-openfermion.git"
     branch: "master"
 
-# Data to help you easily work with your workflow
+# Specify the prefix to use when generating names of workflow executions.
 metadata:
+  generateName: qcbm-opt-
 
-  # Prefix for workflow ID
-  generateName: welcome-to-orquestra-
-
-# Data for running the workflow
+# The actual workflow specification
 spec:
 
-  # Think of this as identifying the `main` function -- this tells the workflow which template to start with
-  entrypoint: salutations
-
-  # Initializing global variables for use in workflow
+  entrypoint: main
   arguments:
     parameters:
-
-    # Where output data is stored -- Must be `quantum-engine` for compatibility with Orquestra data services
     - s3-bucket: quantum-engine
-    # Path where output data is stored within the `s3-bucket` -- can be anything you want
-    - s3-key: tutorials/welcome/
+    - s3-key: projects/z-quantum-qcbm/qcbm-opt
 
-  # The steps of the workflow
   templates:
 
-  # `salutations` is a template that just contains a list of `steps`, which are other templates
-  - name: salutations
+  - name: main
     steps:
 
-    # This template runs the `welcome-to-orquestra` template in the `welcome` resource
-    - - name: greeting
-        template: welcome-to-orquestra
+    # Get Initial Parameters
+    - - name: get-initial-parameters
+        template: generate-random-qcbm-params
         arguments:
           parameters:
-          - resources: [welcome]
+          - n-qubits: "4"
+          - n-layers: "4"
+          - seed: "1234"
+          - topology: "all"
+          - min-val: "-1.57"
+          - max-val: "1.57"
+          - resources: [z-quantum-core, z-quantum-qcbm]
+
+    # Generate Target Distribution
+      - name: get-bars-and-stripes-distribution
+        template: generate-bars-and-stripes-target-distribution
+        arguments:
+          parameters:
+          - nrows: "2"
+          - ncols: "2"
+          - fraction: "1.0"
+          - method: "zigzag"
+          - resources: [z-quantum-core, z-quantum-qcbm]
+
+    # Optimize Variational Circuit
+    - - name: optimize-circuit
+        template: optimize-variational-qcbm-circuit
+        arguments:
+          parameters:
+          - n-qubits: "4"
+          - n-layers: "4"
+          - topology: "all"
+          - epsilon: "0.000001"
+          - distance-measure-specs: "{'module_name': 'zquantum.core.bitstring_distribution', 'function_name': 'compute_clipped_negative_log_likelihood'}"
+
+          - backend-specs: "{'module_name': 'qeforest.simulator', 'function_name': 'ForestSimulator', 'device_name': 'wavefunction-simulator'}"
+          # - backend-specs: "{'module_name': 'qeqhipster.simulator', 'function_name': 'QHipsterSimulator'}"
+
+          - optimizer-specs: "{'module_name': 'zquantum.optimizers.cma_es_optimizer', 'function_name': 'CMAESOptimizer', 'options': {'popsize': 5, 'sigma_0': 0.1, 'tolx': 1e-6}}"
+          # - optimizer-specs: "{'module_name': 'zquantum.optimizers.scipy_optimizer', 'function_name': 'ScipyOptimizer', 'method': 'L-BFGS-B'}"
+
+          - resources: [z-quantum-core, qe-openfermion, z-quantum-optimizers, qe-forest, z-quantum-qcbm]
+          - memory: 2048Mi
+          artifacts:
+          - initial-parameters:
+              from: "{{steps.get-initial-parameters.outputs.artifacts.parameters}}"
+          - target-distribution:
+              from: "{{steps.get-bars-and-stripes-distribution.outputs.artifacts.distribution}}"
