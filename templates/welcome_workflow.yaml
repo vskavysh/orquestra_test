@@ -47,7 +47,9 @@ resources:
   type: git
   parameters:
     url: "git@github.com:zapatacomputing/qe-openfermion.git"
-    branch: "master"'''
+    branch: "master"
+
+:'''
 
 # Specify the prefix to use when generating names of workflow executions.
 metadata:
