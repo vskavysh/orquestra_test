@@ -2,8 +2,6 @@ ZapOSApiVersion: v1alpha1
 kind: Workflow
 
 resources:
-  # List resources needed by workflow.
-resources:
 
 # A resource named `welcome` that is a public git repo. All the fields here are required except branch, which defaults to master.
 - name: welcome
