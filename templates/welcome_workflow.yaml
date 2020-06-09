@@ -2,6 +2,22 @@ ZapOSApiVersion: v1alpha1
 kind: Workflow
 
 resources:
+  # List resources needed by workflow.
+resources:
+
+# A resource named `welcome` that is a public git repo. All the fields here are required except branch, which defaults to master.
+- name: welcome
+  type: git
+  parameters:
+    url: "git@github.com:vskavysh/welcome_workflow.git"
+    branch: "master"
+
+- name: ztransform
+  type: git
+  parameters:
+    url: "git@github.com:zapatacomputing/tutorial-0-ztransform.git"
+    branch: "master"
+  '''
 - name: z-quantum-core
   type: git
   parameters:
@@ -31,7 +47,7 @@ resources:
   type: git
   parameters:
     url: "git@github.com:zapatacomputing/qe-openfermion.git"
-    branch: "master"
+    branch: "master"'''
 
 # Specify the prefix to use when generating names of workflow executions.
 metadata:
